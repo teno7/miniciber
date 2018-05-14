@@ -29,9 +29,18 @@ class Conexion:
         while True:
             conn, addr = self.accpet()
             datos = conn.recv(1024)
-            datos = datos.split(":")
+            datos = datos.split(":") #se espera <nombre>:<macid>
+            nombre = datos[0]
+            macid = datos[1]
             conn.send(self.alquileres.send_state())
             
+    def sendWake(self, mac):
+        # Thank you to remco https://github.com/remcohaszing/pywakeonlan
+        data = b'FFFFFFFFFFFF' + (mac.replace(":","") * 20).encode()
+        send_data = b''
+        for i in range(0, len(data), 2):
+            send_data += struct.pack(b'B', int(data[i: i + 2], 16))
+        self.Boca.writeDatagram(send_data, QHostAddress.Broadcast, 9)
     
     refresh = Signal()
     
@@ -66,13 +75,6 @@ class Conexion:
         macmd5 = macmd5.split("'")[1]
         self.sendMessage(macmd5, "turnoff")
     
-    def sendWake(self, mac):
-# Thank you to remco https://github.com/remcohaszing/pywakeonlan
-        data = b'FFFFFFFFFFFF' + (mac.replace(":","") * 20).encode()
-        send_data = b''
-        for i in range(0, len(data), 2):
-            send_data += struct.pack(b'B', int(data[i: i + 2], 16))
-        self.Boca.writeDatagram(send_data, QHostAddress.Broadcast, 9)
     
     def sendMessage(self, destiny, command, args=""):
         msg = "zise:" + destiny + ":" + command
