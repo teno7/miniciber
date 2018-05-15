@@ -21,6 +21,7 @@ class Oreja(BaseRequestHandler):
 class Conexion:
     
     def __init__(self):
+        self.alquileres = ListaAlquiler()
         self.socket = socket.socket()
         self.socket.bind(socket.gethostname(), 35555)
         self.socket.listen(10)
@@ -32,6 +33,8 @@ class Conexion:
             datos = datos.split(":") #se espera <nombre>:<macid>
             nombre = datos[0]
             macid = datos[1]
+            if not nombre in self.alquileres.lista_pc():
+                self.alquileres.up(nombre, addr, macid)
             conn.send(self.alquileres.send_state())
             
     def sendWake(self, mac):

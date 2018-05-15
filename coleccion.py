@@ -19,7 +19,7 @@ def pc(nombre, mac, ip):
     db.execute(sql)
     db.commit()
 
-class ListaAlquiler:
+class ListaAlquiler: #Regresar lista de computadoras con su respectivo alquiler
 
     def __init__(self):
         self.__ver_activos = True
@@ -75,6 +75,45 @@ class ListaAlquiler:
             self.__lista.append(a)
         cur.close()
 
+class ListaComputadoras:
+    
+    def __init__(self):
+        self.__lista = []
+        self.alquileres = ListaAlquiler()
+        
+    def __refresh(self):
+        sql = "select * from Computadoras;"
+        self.__lista = []
+        cur = db.cursor()
+        for row in cur.execute(sql):
+            a = Computadora()
+            a.set_row(row)
+            if row[0] in self.alquileres.lista_pc():
+                a.alquiler = self.alquileres[row[0]]
+            self.__lista.append(a)
+        cur.close()
+        
+class Computadora:
+    
+    def __init__(self, nombre, mac, ip):
+        self.nombre = nombre
+        self.mac = mac
+        self.ip = ip
+        self.alquiler = None
+    
+    def set_row(self, row):
+        self.nombre = row[0]
+        self.mac = row[1]
+        self.ip = row[2]
+        
+    def encender(self):
+        pass
+    
+    def apagar(self):
+        pass
+    
+    def __guardar(self):
+        pass
 
 class Alquiler:
 
@@ -170,7 +209,7 @@ class Alquiler:
         return self.get_htime(f-self.__inicio)
 
 
-    def setRow(self, row):
+    def set_row(self, row):
         self.id = row[0]
         self.__nombre = row[1]
         self.__inicio = row[2]
