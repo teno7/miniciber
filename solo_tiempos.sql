@@ -1,8 +1,8 @@
 
 CREATE TABLE Computadoras (
-    Nombre VARCHAR(15) UNIQUE PRIMARY KEY, 
-    MacID VARCHAR(17) UNIQUE, 
-    IP VARCHAR(15) UNIQUE
+    nombre VARCHAR(15) UNIQUE PRIMARY KEY, 
+    mac VARCHAR(17) UNIQUE, 
+    ip VARCHAR(15) UNIQUE
 ); /* !Fin */
 
 CREATE TABLE Alquiler(
