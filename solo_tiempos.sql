@@ -14,3 +14,8 @@ CREATE TABLE Alquiler(
     muerto REAL,
     abono REAL
 ); /* !Fin */
+
+CREATE TABLE Tarifa(
+    Minutos INTEGER PRIMARY KEY,
+    Cobro REAL
+); /* !Fin */
