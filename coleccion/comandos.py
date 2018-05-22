@@ -24,9 +24,27 @@ class Interprete:
         if self.cmd == "q" or self.cmd == "q!":
             self.__instrucciones.append(self.cmd)
             return True
-        regla = {}
         re_pc = "pc\s(\w+),\s(\w*),\s(\w*)"
+        re_tarifa = "trc|trd\d+|tr\d+,\d+(.\d+){,1}"
         re_selector = "s\d+(,\d+)*"
+        pcm = re.match(re_pc, self.cmd)
+        m = re.match(re_selector, self.cmd)
+        trm = re.match(re_tarifa, self.cmd)
+        if pcm:
+            return validar_pc(pcm)
+        elif trm:
+            return validar_tarifa(trm)
+        elif m:
+            return self.validar_accion(m)
+        ### SENTENCIA PARA DECLARAR NO VALIDAD UNA INSTRUCCION ###
+        self.error = "Error de sintaxis: '{}' No reconocido".format(self.cmd)
+        return False
+    
+    def validar_pc(self, pcm):
+        pass
+        
+    def validar_accion(self, m):
+        regla = {}
         regla["inicio"] = "i\d*"
         regla["abono"] = "b\+{,1}\d+(.\d+){,1}"
         regla["limite"] = "l\+{,1}\d+"
@@ -34,30 +52,16 @@ class Interprete:
         regla["cambiar"] = "c\d+"
         regla["terminar"] = "t"
         regla["eliminar"] = "d"
-        pcm = re.match(re_pc, self.cmd)
-        if pcm:
-            nombre = pcm[0]
-            MAC = pcm[1]
-            ip = pcm[2] ##### Meter esto en las instrucciones #######
-        m = re.match(re_selector, self.cmd)
-        if m:
-            selector = m.group(0)
-            selector = selector.replace("s", "")
-            self.__objetivos = selector.split(",")
-            self.cmd = self.cmd.replace(m.group(0), "")
-            for r in regla:
-                match = re.search(regla[r], self.cmd)
-                if match:
-                    self.__instrucciones.append(match.group(0))
-                    self.cmd = self.cmd.replace(match.group(0), "")
-        else:
-            self.error = "Selector no valido"
-            return False
-        if len(self.cmd) > 0:
-            self.error = "Error de sintaxis: '{}' No reconocido".format(self.cmd)
-            return False
-        else:
-            return True
+        selector = m.group(0)
+        selector = selector.replace("s", "")
+        self.__objetivos = selector.split(",")
+        ccmd = self.cmd.replace(m.group(0), "")
+        for r in regla:
+            match = re.search(regla[r], ccmd)
+            if match:
+                self.__instrucciones.append(match.group(0))
+                ccmd = ccmd.replace(match.group(0), "")
+        return True if ccmd == "" else False
 
     def ejecutar(self):
         for ins in self.__instrucciones:
