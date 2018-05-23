@@ -5,11 +5,9 @@
 Eufracio Tenoch Sedano Rosales
 tenochsr@gmail.com
 """
-from definiciones import Sistema
 import ui
 
 def main():
-    s = Sistema()
     try:
         tiempos_tkui = ui.TKUI(800, 500)
     except SystemExit as e:

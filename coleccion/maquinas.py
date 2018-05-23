@@ -56,7 +56,7 @@ class Computadora:
         return self.__ip
     
     @property
-    def alquiler(self):
+    def alquiler(self):#Aqui podria obtener lista de alquileres activos
         sql = "select * from Alquiler where fin<>0 and nombre='{}' limit 1"
         sql = sql.format(self.nombre)
         cur = db.cursor()
@@ -156,7 +156,7 @@ class ListaComputadoras:
     
     def __init__(self):
         self.__lista = []
-        self.alquileres = ListaAlquiler()
+        self.error = ""
         
     def __getitem__(self, n):
         for c in self.__lista:
@@ -164,12 +164,31 @@ class ListaComputadoras:
             return c
         return None
     
+    def __contains__(self, i):
+        if self[i] <> None:
+            return True
+        return False
+    
     def nuevo(self, nombre, mac, ip):
         c = Computadora(nombre, mac, ip)
         self.__refresh()
         
+    def cambiar(self, pco, pcd):
+        if pco in self and pcd in self:
+            ao = self[pco].alquiler
+            self[pco].alquiler = self[pcd].alquiler
+            if self[pco].alquiler:
+                self[pco].alquiler.nombre = self[pco].nombre
+            self[pcd].alquiler = ao
+            if self[pcd].alquiler:
+                self[pcd].alquiler.nombre = self[pcd].nombre
+            return True
+        else:
+            self.error = "Alguno de los 2 objetivos no existe"
+            return False
+            
     def __refresh(self):
-        sql = "select * from Computadoras;"
+        sql = "select * from Computadoras;" #SI EL TIEMPO TERMINO SE DEBE FINALIZAR EL ALQUILER
         self.__lista = []
         cur = db.cursor()
         for row in cur.execute(sql):

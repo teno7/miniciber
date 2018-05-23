@@ -16,6 +16,6 @@ CREATE TABLE Alquiler(
 ); /* !Fin */
 
 CREATE TABLE Tarifa(
-    Minutos INTEGER PRIMARY KEY,
-    Cobro REAL
+    minutos INTEGER PRIMARY KEY,
+    cobro REAL
 ); /* !Fin */

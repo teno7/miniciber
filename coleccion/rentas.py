@@ -105,6 +105,15 @@ class Alquiler:
         else:
             f = time()
         return self.get_htime(f-self.__inicio)
+    
+    @property
+    def cobro(self):
+        t = Tarifa()
+        if self.__fin:
+            f = self.__fin
+        else:
+            f = time()
+        return t.cobro(math.floor((f-self.__inicio)/60))
 
 
     def set_row(self, row):
@@ -150,6 +159,51 @@ class Alquiler:
     abono = property(get_abono, set_abono)
 
 
+class Tarifa:
+    
+    def __init__(self):
+        self.cobros = []
+    
+    def __refresh(self):
+        cur = db.cursor()
+        sql = "select * from Tarifa;"
+        for cob in cur.execute(sql):
+            self.cobros.append(cob)
+        cur.close()
+    
+    def cobro(self, i):
+        cob = 0
+        maximo = (0, 0.0)
+        fro a in self.cobros:
+            if a[0] > maximo[0]: # no se puede esto
+                maximo = a
+        if i > maximo[0]:
+            j = math.floor(maximo[0]/i)
+            res = i - maximo[0]*j
+            cob = j * maximo [1]
+        else:
+            res = i
+        for a in self.cobros:
+            if a[0] > res:
+                cob + = a[1]
+        return cob
+    
+    def insertar(self, minutos, cobro):
+        sql = "replace into Tarifa ('tiempo', 'cobro') "
+        sql + = "values('{}'. '{}');".format(minutos, cobro)
+        cur = db.cursor()
+        cur.execute(sql)
+        db.commit()
+        cur.close()
+    
+    def eliminar(self, minutos):
+        sql = "delete from Tarifa where minutos='{}';".format(minutos)
+        cur = db.cursor()
+        cur.execute(sql)
+        db.commit()
+        cur.close()
+        pass
+        
 class ListaAlquiler: #Regresar lista de computadoras con su respectivo alquiler
 
     def __init__(self):
@@ -188,9 +242,6 @@ class ListaAlquiler: #Regresar lista de computadoras con su respectivo alquiler
             self[pc].abono = abono
         return True
 
-    def cambiar(self, pco, pcd):
-        if pco in self.lista_pc() and pcd not in self.lista_pc():
-            self[pco].nombre = pcd
 
     def __refresh(self):
         sql = "select * from Alquiler where fin{}0;"
