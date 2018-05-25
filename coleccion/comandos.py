@@ -7,6 +7,7 @@ tenochsr@gmail.com
 """
 from definiciones import Sistema
 from coleccion.maquinas import ListaComputadoras
+from coleccion.renta import Tarifa
 from time import time, strftime, localtime
 import math, re, sys
 
@@ -16,16 +17,18 @@ class Interprete:
     def __init__(self, cmd):
         self.cmd = cmd
         self.computadoras = ListaComputadoras()
+        self.tarifa = Tarifa()
         self.__instrucciones = []
         self.__objetivos = []
         self.error = ""
 
-    def validar(self):
+    def ejecutar(self):
         if self.cmd == "q" or self.cmd == "q!":
             self.__instrucciones.append(self.cmd)
             return True
+        re_pc = "pcc$|pcd\s*(\w*)$|pc\s+(\w+),\s*([a-fA-F0-9]{2,2}[:\-]{3,3}[a-fA-F0-9]),\s*(\d{1,3}\.{3,3}\d{1,3})$"
         re_pc = "pc\s(\w+),\s(\w*),\s(\w*)"
-        re_tarifa = "trc|trd\d+|tr\d+,\d+(.\d+){,1}"
+        re_tarifa = "(trc)$|trd\s*(\d+)$|tr\s*(\d+),\s*(\d+(?:\.\d+)?)$"
         re_selector = "s\d+(,\d+)*"
         pcm = re.match(re_pc, self.cmd)
         m = re.match(re_selector, self.cmd)
@@ -33,7 +36,7 @@ class Interprete:
         if pcm:
             return validar_pc(pcm)
         elif trm:
-            return validar_tarifa(trm)
+            return ejecutar_tarifa(trm)
         elif m:
             return self.validar_accion(m)
         ### SENTENCIA PARA DECLARAR NO VALIDAD UNA INSTRUCCION ###
@@ -42,6 +45,16 @@ class Interprete:
     
     def validar_pc(self, pcm):
         pass
+    
+    def ejecutar_tarifa(self, trm):
+        grps = trm.groups()
+        if grps[0]:
+            self.tarifa.limpiar()
+        elif grps[1]:
+            self.eliminar(int(grps[1]))
+        elif grps[2]:
+            self.tarifa.insertar(int(grps[2]), int(grps[3]))
+        return True
         
     def validar_accion(self, m):
         regla = {}
