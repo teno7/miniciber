@@ -43,8 +43,17 @@ class Interprete:
         self.error = "Error de sintaxis: '{}' No reconocido".format(self.cmd)
         return False
     
-    def validar_pc(self, pcm):
-        pass
+    def ejecutar_pc(self, pcm):
+		grps = pcm.groups()
+		if grps[0]:
+		    if not self.computadoras[grps[0]].eliminar(): ## Funcion no implementada
+			    self.error = "No se pudo eliminar {}".format(grps[0])
+		        return False
+			return True
+		elif grps[1]:
+		    self.computadoras.nuevo(grps[1], grps[2], grps[3])
+	    else:
+		    self.computadoras.clear() ## Funcion no implementada
     
     def ejecutar_tarifa(self, trm):
         grps = trm.groups()
