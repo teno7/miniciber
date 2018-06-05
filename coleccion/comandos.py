@@ -27,34 +27,36 @@ class Interprete:
             self.__instrucciones.append(self.cmd)
             return True
         re_pc = "pcc$|pcd\s*(\w*)$|pc\s+(\w+),\s*([a-fA-F0-9]{2,2}[:\-]{3,3}[a-fA-F0-9]),\s*(\d{1,3}\.{3,3}\d{1,3})$"
-        re_pc = "pc\s(\w+),\s(\w*),\s(\w*)"
         re_tarifa = "(trc)$|trd\s*(\d+)$|tr\s*(\d+),\s*(\d+(?:\.\d+)?)$"
-        re_selector = "s\d+(,\d+)*"
+        re_selector = "s(\d+(?:,\d+))*"
         pcm = re.match(re_pc, self.cmd)
-        m = re.match(re_selector, self.cmd)
+        acm = re.match(re_selector, self.cmd)
         trm = re.match(re_tarifa, self.cmd)
         if pcm:
             return validar_pc(pcm)
         elif trm:
             return ejecutar_tarifa(trm)
         elif m:
+            selector = m.group(0)
+            selector = selector.replace("s", "")
+            self.__objetivos = selector.split(",")
             return self.validar_accion(m)
         ### SENTENCIA PARA DECLARAR NO VALIDAD UNA INSTRUCCION ###
         self.error = "Error de sintaxis: '{}' No reconocido".format(self.cmd)
         return False
-    
+
     def ejecutar_pc(self, pcm):
-		grps = pcm.groups()
-		if grps[0]:
-		    if not self.computadoras[grps[0]].eliminar(): ## Funcion no implementada
-			    self.error = "No se pudo eliminar {}".format(grps[0])
-		        return False
-			return True
-		elif grps[1]:
-		    self.computadoras.nuevo(grps[1], grps[2], grps[3])
-	    else:
-		    self.computadoras.clear() ## Funcion no implementada
-    
+        grps = pcm.groups()
+        if grps[0]:
+            if not self.computadoras[grps[0]].eliminar():
+                self.error = "No se pudo eliminar {}".format(grps[0])
+                return False
+        elif grps[1]:
+            self.computadoras.nuevo(grps[1], grps[2], grps[3])
+        else:
+            self.computadoras.clear()
+        return True
+
     def ejecutar_tarifa(self, trm):
         grps = trm.groups()
         if grps[0]:
@@ -64,7 +66,7 @@ class Interprete:
         elif grps[2]:
             self.tarifa.insertar(int(grps[2]), int(grps[3]))
         return True
-        
+
     def validar_accion(self, m):
         regla = {}
         regla["inicio"] = "i\d*"
@@ -74,9 +76,6 @@ class Interprete:
         regla["cambiar"] = "c\d+"
         regla["terminar"] = "t"
         regla["eliminar"] = "d"
-        selector = m.group(0)
-        selector = selector.replace("s", "")
-        self.__objetivos = selector.split(",")
         ccmd = self.cmd.replace(m.group(0), "")
         for r in regla:
             match = re.search(regla[r], ccmd)
