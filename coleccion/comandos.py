@@ -71,23 +71,43 @@ class Interprete:
         return True
 
     def validar_cc(self, arg):
-        regla = {}
-        regla["inicio"] = "(i)(\d*)" #Hay acciones que son incompatibles
-        regla["abono"] = "(a)(\+?\d+(?:.\d+)?)" #Entre ellas mismas
-        regla["limmuer"] = "([lm])(\+?\d+)" #No puedes iniciar y terminar
-        regla["cambiar"] = "(c)(\d+)" #En la misma sentencia
-        regla["terminar"] = "(t)()"
-        regla["eliminar"] = "(d)()"
-        ccmd = self.cmd.replace(m.group(0), "")
-        for r in regla:
-            match = re.search(regla[r], ccmd)
-            if match:
-                self.__instrucciones.append(match.group(0))
-                ccmd = ccmd.replace(match.group(0), "")
-        return True if ccmd == "" else False
+        iniciar = "(i)(\d*)" #Hay acciones que son incompatibles
+        abono = "(a)(\+?\d+(?:.\d+)?)" #Entre ellas mismas
+        limmuer = "([lm])(\+?\d+)" #No puedes iniciar y terminar
+        cambiar = "(c)(\d+)" #En la misma sentencia
+        terminar = "(t)()"
+        eliminar = "(d)()"
+        reglas = []
+        reglas.append((0, iniciar, 1))
+        reglas.append((1, "$", 4))
+        reglas.append((2, "$", 4))
+        reglas.append((1, abono, 4))
+        reglas.append((0, cambiar, 4))
+        reglas.append((0, terminar, 4))
+        reglas.append((0, eliminar, 4))
+        reglas.append((0, abono, 2))
+        reglas.append((0, limmuer, 2))
+        reglas.append((2, limmuer, 4))
+        reglas.append((3, abono, 4))
+        est = 0
+        lista_cmd = []
+        while est < 4 and len(arg) > 0:
+            for r in reglas:
+                if est == r[0]:
+                    match = re.match(r[1], arg)
+                    if match:
+                        est = r[2]
+                        lista_cmd.append(match.group(1), match.group(2))
+                        arg = arg.replace(match.group(0), "")
+                        break
+                    else:
+                        est = 5
+        if est == 4:
+            return lista_cmd
+        return None
 
-    def ejecutar(self):
-        for ins in self.__instrucciones:
+    def ejecutar_cc(self, lista_cmd):# lista es tupla CAMBIAR FUNCION
+        for ins, arg in lista_cmd:
             if "i" in ins:
                 arg = ins.replace("i", "")
                 if len(arg) > 0:
