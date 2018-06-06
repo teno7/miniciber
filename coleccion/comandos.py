@@ -28,19 +28,22 @@ class Interprete:
             return True
         re_pc = "pcc$|pcd\s*(\w*)$|pc\s+(\w+),\s*([a-fA-F0-9]{2,2}[:\-]{3,3}[a-fA-F0-9]),\s*(\d{1,3}\.{3,3}\d{1,3})$"
         re_tarifa = "(trc)$|trd\s*(\d+)$|tr\s*(\d+),\s*(\d+(?:\.\d+)?)$"
-        re_selector = "s(\d+(?:,\d+))*"
+        re_control = "s(\d+(?:,\d+))(\S+)"
         pcm = re.match(re_pc, self.cmd)
-        acm = re.match(re_selector, self.cmd)
+        ccm = re.match(re_control, self.cmd)
         trm = re.match(re_tarifa, self.cmd)
         if pcm:
             return validar_pc(pcm)
         elif trm:
             return ejecutar_tarifa(trm)
-        elif m:
-            selector = m.group(0)
-            selector = selector.replace("s", "")
-            self.__objetivos = selector.split(",")
-            return self.validar_accion(m)
+        elif ccm:
+            selector = ccm.group(0)
+            objetivos = selector.split(",")
+            lista_cmd = self.validar_cc(ccm.group(1))
+            if lista_cmd:
+                return self.ejecutar_cc(lista_cmd)
+            self.error = "Argumentos son requeridos para control"
+            return False
         ### SENTENCIA PARA DECLARAR NO VALIDAD UNA INSTRUCCION ###
         self.error = "Error de sintaxis: '{}' No reconocido".format(self.cmd)
         return False
@@ -67,15 +70,14 @@ class Interprete:
             self.tarifa.insertar(int(grps[2]), int(grps[3]))
         return True
 
-    def validar_accion(self, m):
+    def validar_cc(self, arg):
         regla = {}
-        regla["inicio"] = "i\d*"
-        regla["abono"] = "b\+{,1}\d+(.\d+){,1}"
-        regla["limite"] = "l\+{,1}\d+"
-        regla["muerto"] = "m\+{,1}\d+"
-        regla["cambiar"] = "c\d+"
-        regla["terminar"] = "t"
-        regla["eliminar"] = "d"
+        regla["inicio"] = "(i)(\d*)" #Hay acciones que son incompatibles
+        regla["abono"] = "(a)(\+?\d+(?:.\d+)?)" #Entre ellas mismas
+        regla["limmuer"] = "([lm])(\+?\d+)" #No puedes iniciar y terminar
+        regla["cambiar"] = "(c)(\d+)" #En la misma sentencia
+        regla["terminar"] = "(t)()"
+        regla["eliminar"] = "(d)()"
         ccmd = self.cmd.replace(m.group(0), "")
         for r in regla:
             match = re.search(regla[r], ccmd)
