@@ -71,24 +71,15 @@ class Interprete:
         return True
 
     def validar_cc(self, arg):
-        iniciar = "(i)(\d*)" #Hay acciones que son incompatibles
-        abono = "(a)(\+?\d+(?:.\d+)?)" #Entre ellas mismas
-        limmuer = "([lm])(\+?\d+)" #No puedes iniciar y terminar
-        cambiar = "(c)(\d+)" #En la misma sentencia
-        terminar = "(t)()"
-        eliminar = "(d)()"
-        reglas = []
-        reglas.append((0, iniciar, 1))
-        reglas.append((1, "$", 4))
-        reglas.append((2, "$", 4))
-        reglas.append((1, abono, 4))
-        reglas.append((0, cambiar, 4))
-        reglas.append((0, terminar, 4))
-        reglas.append((0, eliminar, 4))
-        reglas.append((0, abono, 2))
-        reglas.append((0, limmuer, 2))
-        reglas.append((2, limmuer, 4))
-        reglas.append((3, abono, 4))
+        exp = "i(\d*)|" #Hay acciones que son incompatibles
+        exp += "a(\+?\d+(?:.\d+)?)|" #Entre ellas mismas
+        exp += "l(\+?\d+)|" #No puedes iniciar y terminar
+        exp += "m(\+?\d+)|" #No puedes iniciar y terminar
+        exp += "c(\d+)|" #En la misma sentencia
+        exp += "(t)"
+        if len(re.sub(exp, "", arg)) > 0:
+            return False
+        lista = re.findall(exp, arg)
         est = 0
         lista_cmd = []
         while est < 4 and len(arg) > 0:
