@@ -1,0 +1,35 @@
+instrucciones aceptadas
+--Administracion de pc's ---
+pcc
+pcd <nombre>
+pc <nombre>, <mac>, <ip>
+
+--- Administracion de tarifas ---
+trc
+trd <minutos>
+tr <minutos>, <cobro>
+
+--- Control de sesiones ---
+s <nombre1>[,<nombre2>[,<nombre3>[,...]]] <accion>
+
+ACCIONES
+i[minutos]      *INICIAR
+a[+][cantidad]  *ABONO
+l[+][minutos]   *LIMITE EN MINUTOS
+m[+][minutos]   *TIEMPO MUERTO
+c<destino>      *CAMBIO DE PC
+t               *TERMINAR
+
+--- Manejo del sistema ---
+q   *SALIR CON NOTIFICADOR CORRIENDO EN SEGUNDO PLANO
+q!  *SALIR COMPLETAMENTE DEL PROGRAMA
+
+
+
+minutos - entero
+cantidad - flotante
+destino - caracteres alfanumericos sin espacios
+cobro - flotante
+nombre -caracteres alfanumericos sin espacios
+mac - formato de direccion MAC
+ip - formato de direccion ip

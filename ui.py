@@ -69,12 +69,9 @@ class TKUI(Frame):
 
     def leer_comando(self, c):
         cmd = self.comando.get()
-        print (cmd)
         self.comando.delete(0, END)
-        inter = Interprete(cmd)
-        if inter.validar():
-            if not inter.ejecutar():
-                self.mostrar_msg(inter.error)
+        inter = Interprete()
+        if inter.ejecutar(cmd):
             self.refresh()
         else:
             self.mostrar_msg(inter.error)

@@ -174,7 +174,7 @@ class Tarifa:
     def cobro(self, i):
         cob = 0
         maximo = (0, 0.0)
-        fro a in self.cobros:
+        for a in self.cobros:
             if a[0] > maximo[0]: # no se puede esto
                 maximo = a
         if i > maximo[0]:
@@ -185,12 +185,12 @@ class Tarifa:
             res = i
         for a in self.cobros:
             if a[0] > res:
-                cob + = a[1]
+                cob += a[1]
         return cob
     
     def insertar(self, minutos, cobro):
         sql = "replace into Tarifa ('tiempo', 'cobro') "
-        sql + = "values('{}'. '{}');".format(minutos, cobro)
+        sql += "values('{}'. '{}');".format(minutos, cobro)
         cur = db.cursor()
         cur.execute(sql)
         db.commit()

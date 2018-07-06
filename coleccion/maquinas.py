@@ -155,9 +155,9 @@ class Computadora:
         db.commit()
         cur.close()
 
-    nombre = property(self.get_nombre, self.set_nombre)
-    mac = property(self.get_mac, self.set_mac)
-    ip = property(self.get_ip, self.set_ip)
+    nombre = property(get_nombre, set_nombre)
+    mac = property(get_mac, set_mac)
+    ip = property(get_ip, set_ip)
 
 
 class ListaComputadoras:
@@ -171,7 +171,7 @@ class ListaComputadoras:
             return c if c.nombre == n else None
 
     def __contains__(self, i):
-        if self[i] <> None:
+        if self[i] != None:
             return True
         return False
 
