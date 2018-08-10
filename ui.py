@@ -5,10 +5,102 @@
 Eufracio Tenoch Sedano Rosales
 tenochsr@gmail.com
 """
-from coleccion import ListaAlquiler, Interprete
+from coleccion.comandos import Interprete
+from coleccion.maquinas import ListaComputadoras
+from coleccion.rentas import ListaAlquiler, Tarifa
 from tkinter import *
 from tkinter.ttk import *
 
+class BaseView(Treeview):
+    
+    def __init__(self, parent):
+        Treeview.__init__(self, parent)
+        self.__item_ids = []
+
+    def refresh(self):
+        pass
+    
+    def clear(self):
+        for i in self.__item_ids:
+            self.delete(i)
+        self.__item_ids = []
+        
+    def inserRow(self, row):
+        self.__item_ids.append(self.insert("", -1, values=row))
+        
+class ComputadorasView(BaseView):
+    
+    def __init__(self, parent):
+        BaseView.__init__(self, parent)
+        self.computadoras = ListaComputadoras()
+        self["columns"]= ('nombre', 'mac', 'ip')
+        self.column("#0", width=10)
+        self.column("nombre", width=50)
+        self.heading("nombre", text="PC")
+        self.column("mac", width=100)
+        self.heading("mac", text="MAC")
+        self.column("ip", width=100)
+        self.heading("ip", text="IP")
+    
+    def refresh(self):
+        self.clear()
+        for c in self.computadoras:
+            self.inserRow((c.nombre, c.mac, c.ip))
+        
+class TarifasView(BaseView):
+    
+    def __init__(self, parent):
+        BaseView.__init__(self, parent)
+        tar = Tarifa()
+        self.cobros = tar.cobros
+        self["columns"]= ('tiempo', 'cobro')
+        self.column("#0", width=10)
+        self.column("tiempo", width=50)
+        self.heading("tiempo", text="Tiempo")
+        self.column("cobro", width=100)
+        self.heading("cobro", text="Cobro")
+    
+    def refresh(self):
+        self.clear()
+        for c = self.cobros:
+            self.inserRow((c[0], c[1]))
+        
+class AlquilerView(BaseView):
+    
+    def __init__(self, parent):
+        BaseView.__init__(self, parent)
+        
+    def refresh(self):
+        pass
+    
+class CiberView(BaseView):
+    
+    def __init__(self, parent):
+        BaseView.__init__(self, parent)
+        self.computadoras = ListaComputadoras()
+        self["columns"]= ('nombre', 'inicio', 'limite', 'abono', 'tiempo')
+        self.column("#0", width=10)
+        self.column("nombre", width=50)
+        self.heading("nombre", text="PC")
+        self.column("inicio", width=100)
+        self.heading("inicio", text="Llegada")
+        self.column("limite", width=100)
+        self.heading("limite", text="Limite")
+        self.column("abono", width=100)
+        self.heading("abono", text="Abono")
+        self.column("tiempo", width=100)
+        self.heading("tiempo", text="Tiempo")
+
+    def refresh(self):
+        self.clear()
+        for c in self.computadoras:
+            if c.alquiler:
+                col = (c.nombre, c.alquiler.inicio, c.alquiler.limite,
+                       c.alquiler.abono, c.alquiler.tiempo)
+            else:
+                col = (c.nombre, "LIBRE", "LIBRE", 0.0, "LIBRE")
+            self.inserRow(col)
+            
 class TKUI(Frame):
 
     def __init__(self, w, h):
@@ -16,56 +108,70 @@ class TKUI(Frame):
         root.title("MiniCiber")
         Frame.__init__(self, root, width=w, height=h)
         self.pack(fill=BOTH, expand=1)
-        self.alquileres = ListaAlquiler()
-        self.tabla = Treeview(self)
-        self.tabla["columns"]= ('nombre', 'inicio', 'limite', 'abono', 'tiempo')
-        self.tabla.column("#0", width=10)
-        self.tabla.column("nombre", width=50)
-        self.tabla.heading("nombre", text="PC")
-        self.tabla.column("inicio", width=100)
-        self.tabla.heading("inicio", text="Llegada")
-        self.tabla.column("limite", width=100)
-        self.tabla.heading("limite", text="Limite")
-        self.tabla.column("abono", width=100)
-        self.tabla.heading("abono", text="Abono")
-        self.tabla.column("tiempo", width=100)
-        self.tabla.heading("tiempo", text="Tiempo")
+        self.espacio_tabla = Frame(self)
+        self.espacio_tabla.pack(side="top", fill=BOTH, expand=1)
+        self.tabla = CiberView(self.espacio_tabla)
         self.tabla.pack(side="top", fill=BOTH, expand=1)
+        self.linea_comandos = Frame(self)
+        self.linea_comandos.pack(side="top", fill=X, expand=1)
+        self.linea_instrucciones = Frame(self)
+        self.linea_instrucciones.pack(side="bottom", fill=X, expand=1)
+        self.f2 = Label(self.linea_instrucciones, text="<F2> Ciber")
+        self.f7 = Label(self.linea_instrucciones, text="<F7> Computadoras")
+        self.f8 = Label(self.linea_instrucciones, text="<F8> Tarifas")
+        self.f9 = Label(self.linea_instrucciones, text="<F9> Alquileres")
+        self.f2.pack(side="left")
+        self.f7.pack(side="left")
+        self.f8.pack(side="left")
+        self.f9.pack(side="left")
         self.bind_all("<Escape>", self.ocultar_comandos)
+        self.bind_all("<F2>", self.mostrar_ciber)
+        self.bind_all("<F7>", self.mostrar_comp)
+        self.bind_all("<F8>", self.mostrar_alq)
+        self.bind_all("<F9>", self.mostrar_tar)
         self.bind_all(":", self.mostrar_comandos)
-        self.linea_comandos = None
-        self.__item_ids = []
-        self.refresh()
+        self.tabla.refresh()
+        self.after(1000, self.tabla.refresh)
         root.mainloop()
-
-    def refresh(self):
-        for i in self.__item_ids:
-            self.tabla.delete(i)
-        self.__item_ids = []
-        for a in self.alquileres.lista():
-            self.__item_ids.append(self.tabla.insert(
-                "", -1, values=(a.nombre, a.inicio,
-                                a.limite, a.abono, a.tiempo)
-                ))
-        self.after(1000, self.refresh)
+    
+    def mostrar_ciber(self, i):
+        for child in self.espacio_tabla.winfo_children():
+            child.destroy()
+        self.tabla = CiberView(self.espacio_tabla)
+        self.tabla.pack(side="top", fill=BOTH, expand=1)
+        
+    def mostrar_comp(self, i):
+        for child in self.espacio_tabla.winfo_children():
+            child.destroy()
+        self.tabla = ComputadorasView(self.espacio_tabla)
+        self.tabla.pack(side="top", fill=BOTH, expand=1)
+        
+    def mostrar_alq(self, i):
+        for child in self.espacio_tabla.winfo_children():
+            child.destroy()
+        self.tabla = AlquilerView(self.espacio_tabla)
+        self.tabla.pack(side="top", fill=BOTH, expand=1)
+    
+    def mostrar_tar(self, i):
+        for child in self.espacio_tabla.winfo_children():
+            child.destroy()
+        self.tabla = TarifasView(self.espacio_tabla)
+        self.tabla.pack(side="top", fill=BOTH, expand=1)
 
     def mostrar_comandos(self, i):
-        if self.linea_comandos:
+        if len(self.linea_comandos.winfo_children())>0:
             self.comando.focus_set()
             return
-        self.linea_comandos = Frame(self)
         self.dospuntos = Label(self.linea_comandos, text=":")
         self.comando = Entry(self.linea_comandos)
         self.dospuntos.pack(side="left")
         self.comando.pack(side="left", fill=X, expand=1)
-        self.linea_comandos.pack(side="bottom", fill=X, expand=1)
         self.comando.focus_set()
         self.comando.bind("<Return>", self.leer_comando)
 
     def ocultar_comandos(self, i):
-        if self.linea_comandos:
-            self.linea_comandos.destroy()
-            self.linea_comandos = None
+        for child in self.linea_comandos.winfo_children():
+            child.destroy()
 
     def leer_comando(self, c):
         cmd = self.comando.get()

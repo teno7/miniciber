@@ -37,6 +37,10 @@ class Interprete:
         elif ccm:
             selector = ccm.group(0)
             objetivos = selector.split(",")
+            for o in objetivos:
+                if o not in self.computadoras:
+                    self.error = "Objetivo no encontrado"
+                    return False
             lista_cmd = self.validar_cc(ccm.group(1))
             if lista_cmd:
                 return self.ejecutar_cc(objetivos, lista_cmd)

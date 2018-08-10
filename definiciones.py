@@ -13,7 +13,7 @@ class Sistema:
 
     def __init__(self):
         if sys.platform in ["linux", "darwin"]:
-            mcdir = "/.config/miniciber/"
+            mcdir = "/.config/miniciber2.0-alpha/"
         else:
             mcdir = "\miniciber-conf"
         self.config_dir = expanduser("~") + mcdir

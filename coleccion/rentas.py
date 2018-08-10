@@ -161,31 +161,48 @@ class Alquiler:
 
 class Tarifa:
     
+    Cobro = namedtuple("Cobro", ["minutos", "importe"])
     def __init__(self):
-        self.cobros = []
+        self.__cobros = []
     
     def __refresh(self):
         cur = db.cursor()
+        self.__cobros = []
         sql = "select * from Tarifa;"
         for cob in cur.execute(sql):
-            self.cobros.append(cob)
+            self.__cobros.append(Tarifa.Cobro(cob[0], cob[1]))
         cur.close()
+    
+    def get_cobros(self):
+        self.__refresh()
+        return self.__cobros
+    
+    def cobro_recursivo(self, mts): # Se necesita determinar intervalo para resto
+        cobmax = Tarifa.Cobro(0, 0.0)
+        for cob in self.cobros:
+            if cob.minutos > cobmax.minutos and mts >= cob.minutos:
+                cobmax = cob 
+            if mts <= cobmax.minutos:
+                cobmax = cob
+        return cobmax.importe + self.cobro_recursivo(mts-cobmax.minutos)
     
     def cobro(self, i):
         cob = 0
-        maximo = (0, 0.0)
+        mints_max = 0
+        imp_max = 0.0
+        tope = None
         for a in self.cobros:
-            if a[0] > maximo[0]: # no se puede esto
-                maximo = a
+            if a.minutos > mints_max: # no se puede esto
+                tope = a
         if i > maximo[0]:
-            j = math.floor(maximo[0]/i)
-            res = i - maximo[0]*j
-            cob = j * maximo [1]
+            j = math.floor(tope.minutos/i)
+            res = i - tope.minutos * j
+            cob = j * tope.importe
         else:
             res = i
         for a in self.cobros:
-            if a[0] > res:
-                cob += a[1]
+            if a.minutos > res:
+                cob += a.importe
         return cob
     
     def insertar(self, minutos, cobro):
@@ -202,7 +219,8 @@ class Tarifa:
         cur.execute(sql)
         db.commit()
         cur.close()
-        pass
+    
+    cobros = property(get_cobros)
         
 class ListaAlquiler: #Regresar lista de computadoras con su respectivo alquiler
 

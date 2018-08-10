@@ -174,6 +174,9 @@ class ListaComputadoras:
         if self[i] != None:
             return True
         return False
+    
+    def __iter__(self):
+        return iter(self.__lista)
 
     def clear(self):
         sql = "delete from Computadoras;"
@@ -209,4 +212,3 @@ class ListaComputadoras:
             a.set_row(row)
             self.__lista.append(a)
         cur.close()
-
