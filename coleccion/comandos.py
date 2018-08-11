@@ -24,7 +24,7 @@ class Interprete:
             sys.exit(0) # En alguna de las otras instrucciones 
         elif "q" == cmd:# Debe definirse en el codigo de abajo
             sys.exit(1)
-        re_pc = "pcc$|pcd\s*(\w*)$|pc\s+(\w+),\s*([a-fA-F0-9]{2,2}[:\-]{3,3}[a-fA-F0-9]),\s*(\d{1,3}\.{3,3}\d{1,3})$"
+        re_pc = "pcc$|pcd\s*(\w*)$|pc\s+(\w+),\s*((?:[a-fA-F0-9]{2,2}[:\-]){3,3}[a-fA-F0-9]),\s*((?:\d{1,3}\.){3,3}\d{1,3})$"
         re_tarifa = "(trc)$|trd\s*(\d+)$|tr\s*(\d+),\s*(\d+(?:\.\d+)?)$"
         re_control = "s(\d+(?:,\d+))(\S+)"
         pcm = re.match(re_pc, cmd)
@@ -47,7 +47,7 @@ class Interprete:
             self.error = "Semantica no comprendida por el intérprete"
             return False
         ### SENTENCIA PARA DECLARAR NO VALIDAD UNA INSTRUCCION ###
-        self.error = "Error de sintaxis: '{}' No reconocido".format(self.cmd)
+        self.error = "Error de sintaxis: '{}' No reconocido".format(cmd)
         return False
 
     def ejecutar_pc(self, pcm):

@@ -7,6 +7,7 @@ tenochsr@gmail.com
 """
 from definiciones import Sistema
 from time import time, strftime, localtime
+from collections import namedtuple
 import math
 
 s = Sistema()
@@ -165,6 +166,10 @@ class Tarifa:
     def __init__(self):
         self.__cobros = []
     
+    def __iter__(self):
+        self.refresh()
+        return iter(self.__cobros)
+    
     def __refresh(self):
         cur = db.cursor()
         self.__cobros = []
@@ -177,33 +182,17 @@ class Tarifa:
         self.__refresh()
         return self.__cobros
     
-    def cobro_recursivo(self, mts): # Se necesita determinar intervalo para resto
+    def cobro(self, mts): # Se necesita determinar intervalo para resto
         cobmax = Tarifa.Cobro(0, 0.0)
         for cob in self.cobros:
-            if cob.minutos > cobmax.minutos and mts >= cob.minutos:
+            if cob.minutos > cobmax.minutos:
                 cobmax = cob 
-            if mts <= cobmax.minutos:
+        importe = cobmax.importe * math.floor(mts/cobmax.minutos)
+        mts = mts - cobmax.minutos * math.floor(mts/cobmax.minutos)
+        for cob in self.cobros:
+            if cob.minutos > mts and cob.minutos < cobmax.minutos:
                 cobmax = cob
-        return cobmax.importe + self.cobro_recursivo(mts-cobmax.minutos)
-    
-    def cobro(self, i):
-        cob = 0
-        mints_max = 0
-        imp_max = 0.0
-        tope = None
-        for a in self.cobros:
-            if a.minutos > mints_max: # no se puede esto
-                tope = a
-        if i > maximo[0]:
-            j = math.floor(tope.minutos/i)
-            res = i - tope.minutos * j
-            cob = j * tope.importe
-        else:
-            res = i
-        for a in self.cobros:
-            if a.minutos > res:
-                cob += a.importe
-        return cob
+        return importe + cobmax.importe
     
     def insertar(self, minutos, cobro):
         sql = "replace into Tarifa ('tiempo', 'cobro') "

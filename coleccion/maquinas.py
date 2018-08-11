@@ -176,6 +176,7 @@ class ListaComputadoras:
         return False
     
     def __iter__(self):
+        self.__refresh()
         return iter(self.__lista)
 
     def clear(self):

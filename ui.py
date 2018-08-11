@@ -51,8 +51,7 @@ class TarifasView(BaseView):
     
     def __init__(self, parent):
         BaseView.__init__(self, parent)
-        tar = Tarifa()
-        self.cobros = tar.cobros
+        self.tarifa = Tarifa()
         self["columns"]= ('tiempo', 'cobro')
         self.column("#0", width=10)
         self.column("tiempo", width=50)
@@ -62,8 +61,8 @@ class TarifasView(BaseView):
     
     def refresh(self):
         self.clear()
-        for c = self.cobros:
-            self.inserRow((c[0], c[1]))
+        for cob in self.tarifa:
+            self.inserRow((cob.minutos, cob.importe))
         
 class AlquilerView(BaseView):
     
